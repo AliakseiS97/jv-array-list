@@ -4,7 +4,8 @@ import java.util.NoSuchElementException;
 
 public class ArrayList<T> implements List<T> {
     private static final int DEFAULT_CAPACITY = 10;
-    private static final double GROWTH_FACTOR = 1.5;
+    private static final int NUMERATOR = 3;
+    private static final int DENOMINATOR = 2;
     private Object[] elements;
     private int size;
 
@@ -13,13 +14,17 @@ public class ArrayList<T> implements List<T> {
         this.size = 0;
     }
 
-    public void grow() {
-        if (elements.length == size) {
-            int newCapacity = (int)(elements.length * GROWTH_FACTOR);
-            Object[] newElements = new Object[newCapacity];
-            System.arraycopy(elements, 0, newElements, 0, size);
-            elements = newElements;
+    public void grow(int minCapacity) {
+        if (elements.length >= minCapacity) {
+            return;
         }
+        int newCapacity = (elements.length * NUMERATOR / DENOMINATOR);
+        if (newCapacity < minCapacity) {
+            newCapacity = minCapacity;
+        }
+        Object[] newElements = new Object[newCapacity];
+        System.arraycopy(elements, 0, newElements, 0, size);
+        elements = newElements;
     }
 
     private void checkIndex(int index) throws ArrayListIndexOutOfBoundsException {
@@ -31,7 +36,7 @@ public class ArrayList<T> implements List<T> {
     @Override
     public void add(T value) {
         if (size == elements.length) {
-            grow();
+            grow(size + 1);
         }
         elements[size++] = value;
     }
@@ -47,7 +52,7 @@ public class ArrayList<T> implements List<T> {
                             + value);
         }
         if (size == elements.length) {
-            grow();
+            grow(size + 1);
         }
         System.arraycopy(elements, index, elements, index + 1, size - index);
         elements[index] = value;
@@ -59,13 +64,11 @@ public class ArrayList<T> implements List<T> {
         if (list == null) {
             throw new NullPointerException("list is null");
         }
-        Object[] newElements = new Object[list.size() + elements.length];
-        System.arraycopy(elements, 0, newElements, 0, size);
+        grow(size + list.size());
         for (int i = 0; i < list.size(); i++) {
-            newElements[size + i] = list.get(i);
+            elements[size + i] = list.get(i);
         }
         size += list.size();
-        elements = newElements;
     }
 
     @Override
