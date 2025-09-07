@@ -1,23 +1,24 @@
 package core.basesyntax;
 
-import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class ArrayList<T> implements List<T> {
-
-    private static final int MAX_CAPACITY = 10;
+    private static final int DEFAULT_CAPACITY = 10;
+    private static final double GROWTH_FACTOR = 1.5;
     private Object[] elements;
     private int size;
 
     public ArrayList() {
-        this.elements = new Object[MAX_CAPACITY];
+        this.elements = new Object[DEFAULT_CAPACITY];
         this.size = 0;
     }
 
     public void grow() {
         if (elements.length == size) {
-            elements = Arrays.copyOf(elements, (int) (elements.length * 1.5));
+            int newCapacity = (int)(elements.length * GROWTH_FACTOR);
+            Object[] newElements = new Object[newCapacity];
+            System.arraycopy(elements, 0, newElements, 0, size);
+            elements = newElements;
         }
     }
 
@@ -38,7 +39,12 @@ public class ArrayList<T> implements List<T> {
     @Override
     public void add(T value, int index) {
         if (index < 0 || index > size) {
-            throw new ArrayListIndexOutOfBoundsException("Index out of bounds: " + index);
+            throw new ArrayListIndexOutOfBoundsException(
+                    "Index " + index
+                            + " out of bounds for size "
+                            + size
+                            + " ,Element not found: "
+                            + value);
         }
         if (size == elements.length) {
             grow();
@@ -87,14 +93,12 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(elements[i], element)) {
+            if ((element == null && elements[i] == null)
+                    || (element != null && element.equals(elements[i]))) {
                 @SuppressWarnings("unchecked")
-                        final T removed = (T) elements[i];
-                for (int j = i; j < size - 1; j++) {
-                    elements[j] = elements[j + 1];
-                }
-                elements[size - 1] = null;
-                size--;
+                        T removed = (T) elements[i];
+                System.arraycopy(elements, i + 1, elements, i, size - i - 1);
+                elements[--size] = null;
                 return removed;
             }
         }
